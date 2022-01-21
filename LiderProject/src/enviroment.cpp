@@ -177,7 +177,7 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer, ProcessPointCloud
 
  
 
-std::vector <pcl::PointCloud<pcl::PointXYZI>::Ptr> cloudClusters = euclideanCluster(cloudOutliers, 0.3, 10, 100);
+std::vector <pcl::PointCloud<pcl::PointXYZI>::Ptr> cloudClusters = euclideanCluster(cloudOutliers, 0.42, 18, 1500);
    int clusterId = 0;
 std::vector<Color> colors = {Color(1,0,0), Color(0,1,0), Color(0,0,1)};
 
