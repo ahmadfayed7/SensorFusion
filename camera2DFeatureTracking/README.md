@@ -1,198 +1,113 @@
-# detectors and descriptor  combinations  Data and anlysis
+# **SFND: 2D Feature Tracking**
 
-#process images use  descriptor : BRIEF and detector : SHITOMASI
+<img src="images/keypoints.png" width="820" height="248" />
 
-number of keypoints =: 1179  
-matched keypoints =904  
-Detector Time: 8.40984 ms  
-Descriptor Time: 0.680266 ms  
-*****************************************************
-#process images use  descriptor : BRIEF and detector : HARRIS
+## Dependencies for Running Locally
+* cmake >= 2.8
+  * All OSes: [click here for installation instructions](https://cmake.org/install/)
+* make >= 4.1 (Linux, Mac), 3.81 (Windows)
+  * Linux: make is installed by default on most Linux distros
+  * Mac: [install Xcode command line tools to get make](https://developer.apple.com/xcode/features/)
+  * Windows: [Click here for installation instructions](http://gnuwin32.sourceforge.net/packages/make.htm)
+* OpenCV >= 4.1
+  * This must be compiled from source using the `-D OPENCV_ENABLE_NONFREE=ON` cmake flag for testing the SIFT and SURF detectors.
+  * The OpenCV 4.1.0 source code can be found [here](https://github.com/opencv/opencv/tree/4.1.0)
+* gcc/g++ >= 5.4
+  * Linux: gcc / g++ is installed by default on most Linux distros
+  * Mac: same deal as make - [install Xcode command line tools](https://developer.apple.com/xcode/features/)
+  * Windows: recommend using [MinGW](http://www.mingw.org/)
 
-number of keypoints =: 196  
-matched keypoints =128  
-Detector Time: 513.656 ms  
-Descriptor Time: 0.550437 ms  
-*****************************************************
-#process images use  descriptor : BRIEF and detector : FAST
+## Basic Build Instructions
 
-number of keypoints =: 1491  
-matched keypoints =1015  
-Detector Time: 0.533765 ms  
-Descriptor Time: 0.470453 ms  
-*****************************************************
-#process images use  descriptor : BRIEF and detector : BRISK
+1. Clone this repo.
+2. Make a build directory in the top level directory: `mkdir build && cd build`
+3. Compile: `cmake .. && make`
+4. Run it: `./2D_feature_tracking`.
 
-number of keypoints =: 2762  
-matched keypoints =1550  
-Detector Time: 26.2979 ms  
-Descriptor Time: 0.723351 ms  
-*****************************************************
-#process images use  descriptor : BRIEF and detector : ORB
+### **Rubric**
 
-number of keypoints =: 1161  
-matched keypoints =550  
-Detector Time: 4.10129 ms  
-Descriptor Time: 0.345005 ms  
-*****************************************************
-#process images use  descriptor : BRIEF and detector : AKAZE
+#### **MP1: Data Buffer Optimisation**
+Implemented a ring buffer with ```dataBufferSize=2```.
+<br>
+Push the current image into the buffer as long as the buffer size is less than ```dataBufferSize```.
+<br>
+If the ring buffer size is greater than or equal to ```dataBufferSize``` then erase the oldest element.
 
-number of keypoints =: 1670  
-matched keypoints =1253  
-Detector Time: 35.5531 ms  
-Descriptor Time: 0.787436 ms  
-*****************************************************
-#process images use  descriptor : BRIEF and detector : SIFT
+#### **MP2: Keypoint Detection**
+Implemented detectors [HARRIS, FAST, BRISK, ORB, AKAZE, SIFT] through three functions:
 
-number of keypoints =: 1386  
-matched keypoints =753  
-Detector Time: 60.2289 ms  
-Descriptor Time: 0.507727 ms  
-*****************************************************
-#process images use  descriptor : ORB and detector : SHITOMASI
+```detKeypointsShiTomasi```
+<br>
+```detKeypointsHarris```
+<br>
+```detKeypointsModern```
 
-number of keypoints =: 1179  
-matched keypoints =900  
-Detector Time: 5.82644 ms  
-Descriptor Time: 0.616731 ms  
-*****************************************************
-#process images use  descriptor : ORB and detector : HARRIS
+The number of keypoints detected as well as the detection time were stored for performance evaluation.
 
-number of keypoints =: 196  
-matched keypoints =125  
-Detector Time: 511.893 ms  
-Descriptor Time: 0.57082 ms  
-*****************************************************
-#process images use  descriptor : ORB and detector : FAST
+#### **MP3: Keypoint Removal**
 
-number of keypoints =: 1491  
-matched keypoints =1016  
-Detector Time: 0.531513 ms  
-Descriptor Time: 0.636539 ms  
-*****************************************************
-#process images use  descriptor : ORB and detector : BRISK
+Removed all keypoints outside of a pre-defined rectangle.
+<br>
+Used only the points within the ROI for firther processing.
 
-number of keypoints =: 2762  
-matched keypoints =1588  
-Detector Time: 26.6919 ms  
-Descriptor Time: 2.61691 ms  
-*****************************************************
-#process images use  descriptor : ORB and detector : ORB
+#### **MP4: Keypoint Descriptors**
 
-number of keypoints =: 1161  
-matched keypoints =760  
-Detector Time: 4.1431 ms  
-Descriptor Time: 2.55888 ms  
-*****************************************************
-#process images use  descriptor : ORB and detector : AKAZE
+Implemented descriptors [BRIEF, ORB, FREAK, AKAZE, SIFT]
+<br>
+The descriptor extraction time was logged for performance evaluation.
 
-number of keypoints =: 1670  
-matched keypoints =1206  
-Detector Time: 32.2043 ms  
-Descriptor Time: 1.83796 ms  
-*****************************************************
-#process images use  descriptor : FREAK and detector : SHITOMASI
+#### **MP5: Descriptor Matching**
 
-number of keypoints =: 1179  
-matched keypoints =829  
-Detector Time: 5.9758 ms  
-Descriptor Time: 30.4563 ms  
-*****************************************************
-#process images use  descriptor : FREAK and detector : HARRIS
+Implemented FLANN matching as well as K-Nearest Neighbour selection.
+<br>
+Matching methods [MAT_BF, FLANN] can be selected based on an input string.
 
-number of keypoints =: 196  
-matched keypoints =122  
-Detector Time: 511.854 ms  
-Descriptor Time: 30.1865 ms  
-*****************************************************
-#process images use  descriptor : FREAK and detector : FAST
+#### **MP6: Descriptor Distance Ratio**
 
-number of keypoints =: 1491  
-matched keypoints =926  
-Detector Time: 0.514191 ms  
-Descriptor Time: 30.7259 ms  
-*****************************************************
-#process images use  descriptor : FREAK and detector : BRISK
+For KNN, filtered keypoints for matching based on a minimum distance ratio of 0.8.
 
-number of keypoints =: 2762  
-matched keypoints =1495  
-Detector Time: 26.4885 ms  
-Descriptor Time: 31.5425 ms  
-*****************************************************
-#process images use  descriptor : FREAK and detector : ORB
+#### **MP7: Number of Keypoints on Preceding Vehicle**
 
-number of keypoints =: 1161  
-matched keypoints =412  
-Detector Time: 4.30502 ms  
-Descriptor Time: 30.1621 ms  
-*****************************************************
-#process images use  descriptor : FREAK and detector : AKAZE
+| Detector      | Number of Keypoints in ROI |
+| ------------- | -------------------------- |
+| **AKAZE**     | 1670                       |
+| **BRISK**     | 2762                       |
+| **FAST**      | 1491                       |
+| **HARRIS**    | 196                        |
+| **ORB**       | 1161                       |
+| **SHITOMASI** | 1179                       |
+| **SIFT**      | 1386                       |
 
-number of keypoints =: 1670  
-matched keypoints =1251  
-Detector Time: 33.9725 ms  
-Descriptor Time: 31.7515 ms  
-*****************************************************
-#process images use  descriptor : FREAK and detector : SIFT
+#### **MP8: Number of Matched Keypoints**
 
-number of keypoints =: 1386  
-matched keypoints =683  
-Detector Time: 59.5846 ms  
-Descriptor Time: 30.7934 ms  
-*****************************************************
-#process images use  descriptor : AKAZE and detector : AKAZE
+| Detector\Descriptor | BRIEF | ORB   | FREAK | AKAZE  | SIFT |
+| ------------------- | ----- | ----- | ----- | -----  | ---- |
+| **SHITOMASI**       | 904   | 900   | 829   | N/A    | 915  |
+| **HARRIS**          | 128   | 125   | 122   | N/A    | 133  |
+| **FAST**            | 1015  | 1016  | 926   | N/A    | 1015 |
+| **BRISK**           | 1550  | 1588  | 1495  | N/A    | 1536 |
+| **ORB**             | 550   | 760   | 412   |  N/A   | 718  |
+| **AKAZE**           | 1253  | 1206  | 1251  | 1250   | 1277 |
+| **SIFT**            | 753   | N/A   | 683   |  N/A   | 832  |
 
-number of keypoints =: 1670  
-matched keypoints =1250  
-Detector Time: 31.791 ms  
-Descriptor Time: 26.6881 ms  
-*****************************************************
-#process images use  descriptor : SIFT and detector : SHITOMASI
 
-number of keypoints =: 1179  
-matched keypoints =915  
-Detector Time: 5.66432 ms  
-Descriptor Time: 6.95643 ms  
-*****************************************************
-#process images use  descriptor : SIFT and detector : HARRIS
+#### **MP9: Average Processing Time  (detector time + descriptor time)**
 
-number of keypoints =: 196  
-matched keypoints =133  
-Detector Time: 511.369 ms   
-Descriptor Time: 6.7556 ms  
-*****************************************************
-#process images use  descriptor : SIFT and detector : FAST
+| Detector\Descriptor | BRIEF   | ORB     | FREAK   | AKAZE  | SIFT   |
+| ------------------- | -----   | -----   | -----   | -----  | ----   |
+| **SHITOMASI**       | 30.06   | 20.01   | 108.57  | N/A    | 42.81  |
+| **HARRIS**          | 1628.91 | 1580.92 | 1676.75 | N/A    | 1636.1 |
+| **FAST**            | 2.96    | 3.6     | 92.92   | N/A    | 34.1   |
+| **BRISK**           | 83.68   | 95.07   | 179.35  | N/A    | 133.628|
+| **ORB**             | 16.57   | 24.88   | 104.01  |  N/A   | 68.1242|
+| **AKAZE**           | 110.005 | 99.83   | 185.6   | 156.757| 112.08 |
+| **SIFT**            | 181.28  | N/A     | 258.94  |  N/A   | 245.78 |
 
-number of keypoints =: 1491  
-matched keypoints =1015  
-Detector Time: 0.524481 ms  
-Descriptor Time: 8.03462 ms  
-*****************************************************
-#process images use  descriptor : SIFT and detector : BRISK
 
-number of keypoints =: 2762  
-matched keypoints =1536  
-Detector Time: 26.4377 ms  
-Descriptor Time: 14.5503 ms  
-*****************************************************
-#process images use  descriptor : SIFT and detector : ORB
+#### **Top Three Detector/Descriptor Combinations:**
 
-number of keypoints =: 1161  
-matched keypoints =718  
-Detector Time: 4.31735 ms  
-Descriptor Time: 15.5238 ms  
-*****************************************************
-#process images use  descriptor : SIFT and detector : AKAZE
-
-number of keypoints =: 1670  
-matched keypoints =1277  
-Detector Time: 31.3507 ms  
-Descriptor Time: 11.0764 ms   
-*****************************************************
-#process images use  descriptor : SIFT and detector : SIFT
-
-number of keypoints =: 1386  
-matched keypoints =832  
-Detector Time: 49.7656 ms  
-Descriptor Time: 34.8945 ms  
-*****************************************************
+Detector/Descriptor  | Number of Matched Keypoints | Processing Time |
+-------------------- | --------------------------- | --------------- |
+FAST+BRIEF           | 1015 keypoints              | 2.96 ms         |
+FAST+ORB             | 1016 keypoints              | 3.6 ms          |
+SHITOMASI+ORB        | 900 keypoints              | 20.01 ms         |
