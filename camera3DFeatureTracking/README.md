@@ -41,10 +41,10 @@ In this final project, you will implement the missing parts in the schematic. To
 
 The table below shows the TTC estimate at a particular frame index. Recall that we are using LiDAR points that are bounded within object bounding boxes created by the YOLO Object Detection algorithm, so this is independent of any feature detectors and descriptors used. We will also show the minimum `x` coordinate in the point cloud at each frame to help with the analysis
 
-|#Image 	 |TTC LiDAR (in seconds)	|Min X (in m) |
-|:..............:|:............................:|.............|
+|#Image 	     |TTC LiDAR (in seconds)	    |Min X (in m) |
+|............ |...........................|.............|
 |  1	         |   12.9722	                |   7.913     |
-|  2	         |   12.264	                |   7.849     |
+|  2	         |   12.264	                 |   7.849     |
 |  3	         |   13.9161	                |   7.793     |
 |  4	         |   7.11572	                |   7.685     |
 |  5	         |   16.2511	                |   7.638     |
@@ -52,15 +52,15 @@ The table below shows the TTC estimate at a particular frame index. Recall that 
 |  7	         |   34.3404	                |   7.555     |
 |  8	         |   9.34376	                |   7.475     |
 |  9	         |   18.1318	                |   7.434     |
-|  10	         |   18.0318	                |   7.393     |
-|  11	         |   3.83244	                |   7.205     |
-|  12	         |   10.8537	                |   7.272     |
-|  13	         |   9.22307	                |   7.194     |
-|  14	         |   10.9678	                |   7.129     |
-|  15	         |   8.09422	                |   7.042     |
-|  16	         |   3.17535	                |   6.827     |
-|  17	         |   9.99424	                |   6.896     |
-|  18	         |   8.30978	                |   6.814     |
+|  10	        |   18.0318	                |   7.393     |
+|  11	        |   3.83244	                |   7.205     |
+|  12	        |   10.8537	                |   7.272     |
+|  13	        |   9.22307	                |   7.194     |
+|  14	        |   10.9678	                |   7.129     |
+|  15	        |   8.09422	                |   7.042     |
+|  16	        |   3.17535	                |   6.827     |
+|  17	        |   9.99424	                |   6.896     |
+|  18	        |   8.30978	                |   6.814     |
 
 The first three frames seem plausible but when we get to frames 4-6, it drops right down to 6.79 seconds. The reason why is because the minimum distance dropped from 7.79 m from frame 3 down to 7.68 m to frame 4\. For the first three frames, the distance to the ego vehicle seems plausible as it looks like we're gradually slowing down. However, at frame 4 there is a sudden jump in closeness meaning that the TTC thus decreases more quickly. The first three frames have a difference of 0.06 m between successive frames, but for frame 4, we have a 0.11 m difference. This is roughly double the distance resulting in the TTC decreasing by half in proportion.
 
