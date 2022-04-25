@@ -42,7 +42,7 @@ In this final project, you will implement the missing parts in the schematic. To
 The table below shows the TTC estimate at a particular frame index. Recall that we are using LiDAR points that are bounded within object bounding boxes created by the YOLO Object Detection algorithm, so this is independent of any feature detectors and descriptors used. We will also show the minimum `x` coordinate in the point cloud at each frame to help with the analysis
 
 |#Image 	     |TTC LiDAR (in seconds)	    |Min X (in m) |
-|............ |...........................|.............|
+|-------------|---------------------------|-------------|
 |  1	         |   12.9722	                |   7.913     |
 |  2	         |   12.264	                 |   7.849     |
 |  3	         |   13.9161	                |   7.793     |
