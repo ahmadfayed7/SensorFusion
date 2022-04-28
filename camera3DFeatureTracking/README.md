@@ -35,9 +35,27 @@ In this final project, you will implement the missing parts in the schematic. To
 3. Compile: `cmake .. && make`
 4. Run it: `./3D_object_tracking`.
 
+## Rubric
 
+#### **FP1: Match 3D Objects**
 
-##  Performance Evaluation 1 - LiDAR-based TTC
+Implemented the method ```matchBoundingBoxes()``` which takes the current/previous data frames as inputs and outputs the ids of the matched regions of interest. Matches must be the ones with the highest number of keypoint correspondences.
+
+#### **FP2: Compute Lidar TTC**
+
+Implemented the method ```computeTTCLidar()``` which computes the TTC for matched 3D objects using only lidat measurments from the matched bounding boxes between the current/previous frames.
+
+In order to reduce the risk of outliers only the lidar points within the ego lane were considered and the mean distance was taken in order to produce a stable output.
+
+#### **FP3: Associate Keypoints with Bounding Boxes**
+
+Implemented the method: ```clusterKptMatchesWithROI()``` which associates keypoints with the bounding box that encloses them. All matches between current/previous frame are pushed to a vector within the respective bounding box.
+
+#### **FP4: Compute Camera TTC**
+
+Implemented the method: ```computeTTCCamera()``` which examines the distance ratios between keypoint matches in the current/previous frames - this ratio is then used to compute the TTC.
+
+## FP5: Performance Evaluation 1 - LiDAR-based TTC
 
 The table below shows the TTC estimate at a particular frame index. Recall that we are using LiDAR points that are bounded within object bounding boxes created by the YOLO Object Detection algorithm, so this is independent of any feature detectors and descriptors used. We will also show the minimum `x` coordinate in the point cloud at each frame to help with the analysis
 
@@ -69,7 +87,7 @@ We can see that shape of the point cloud of the back of the preceding vehicle is
 
 As we can clearly see, the point clouds are well formed but due to the constant velocity model, a short displacement between frames breaks down this assumption quickly.
 
-##  Performance Evaluation 2
+## FP6: Performance Evaluation 2
 
 We will show graphs demonstrating the TTC using the camera-based approach for each possible combination of detector and descriptor. Each graph will show results for each possible detector where each trace on the graph will plot the TTC trend of each frame for a descriptor. As noted in the midterm report, it is not possible to use AKAZE descriptors with anything else other than AKAZE keypoints. Also, using the SIFT detector and the ORB descriptor causes out-of-memory issues, so we skip using that as well. To simulate the industry, standard, we use FLANN matching with kNN selection for efficiency.
 

@@ -230,33 +230,63 @@ void computeTTCCamera(std::vector<cv::KeyPoint> &kptsPrev, std::vector<cv::KeyPo
 
 
 
+
 void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
                      std::vector<LidarPoint> &lidarPointsCurr, double frameRate, double &TTC)
 {
-   static int imagecounter=0;
-     double dT= 1 / frameRate ;
-     double laneWidth =4.0;
-    double minXCurr{ 1e9 };
-    double minXPrev{ 1e9 };
-    for (auto point : lidarPointsPrev) 
-    {     
-        if(abs(point.y)<=laneWidth /2)
-           minXPrev  = minXPrev > point.x  ?   point.x  : minXPrev ;
-      
-    }
-    for (auto point : lidarPointsCurr) 
-    { 
-           if(abs(point.y)<=laneWidth /2)
-              minXCurr  = minXCurr > point.x  ?   point.x  : minXCurr ;
+    static int imagecounter=0;
+    double dT = 1.0f / frameRate;
+    double laneWidth = 4.0;
+
+    std::vector<double> prev_x, curr_x;
+    double avg_prev_x, avg_curr_x;  
+    
+    
+    for (auto it = lidarPointsPrev.begin(); it != lidarPointsPrev.end(); it++)
+    {
+        if (abs(it->y) <= laneWidth / 2.0)
+        {
+            prev_x.push_back(it->x);
+            
+        }
         
     }
-
    
+    for (auto it = lidarPointsCurr.begin(); it != lidarPointsCurr.end(); it++)
+    {
+        if (abs(it->y) <= laneWidth / 2.0)
+        {
+            curr_x.push_back(it->x);
+           
+        }
+       
+    }
 
-    TTC = (minXCurr * dT) / abs(minXPrev - minXCurr);
-    imagecounter++;
-    //cout<<imagecounter<<";"<<TTC<<";"<<minXCurr<<endl;   //for measure only
+    if (prev_x.size() > 0 && curr_x.size() > 0)
+    {
+        std::sort(prev_x.begin(), prev_x.end());
+        long medIndex_prv = floor(prev_x.size() / 2.0);
+         avg_prev_x = prev_x.size() % 2 == 0 ? (prev_x[medIndex_prv - 1] + prev_x[medIndex_prv]) / 2.0 : prev_x[medIndex_prv]; // compute median dist. ratio to remove outlier influence
+          
+
+        std::sort(curr_x.begin(), curr_x.end());
+        long medIndex_cur = floor(curr_x.size() / 2.0);
+      avg_curr_x = curr_x.size() % 2 == 0 ? (curr_x[medIndex_cur - 1] + curr_x[medIndex_cur]) / 2.0 : curr_x[medIndex_cur]; // compute median dist. ratio to remove outlier influence
+        
+
+       
+    }
+    else
+    {
+        TTC = NAN;
+        return;
+    }
+      
+    TTC = (avg_curr_x * dT ) /(avg_prev_x - avg_curr_x);
     
+ 
+     imagecounter++;
+  //cout<<TTC<<endl;  for measure only
 }
 
 
