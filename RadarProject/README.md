@@ -131,7 +131,7 @@ axis ([0 200 0 1]);
 grid;
  
 ```
-<img src="images/images/1.png" width="820" height="248" />
+<img src="images/images/1.PNG" width="820" height="248" />
 
 ## RANGE DOPPLER RESPONSE {#7}
 
@@ -174,7 +174,7 @@ ylabel('Range');
 zlabel('Amplitude');
 ```
 
-<img src="images/images/2.png" width="820" height="248" />
+<img src="images/images/2.PNG" width="820" height="248" />
 
 ##CFAR implementation {#8}
 
@@ -253,5 +253,5 @@ colorbar;
 
 ```
 
-<img src="images/images/3.png" width="820" height="248" />
+<img src="images/images/3.PNG" width="820" height="248" />
 </div>
