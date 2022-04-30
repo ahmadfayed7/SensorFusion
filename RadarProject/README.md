@@ -102,7 +102,7 @@ Radar response.
 > - Plot the output
 > - There should be a peak at the initial position of the target
 >
-> ![](images/2.png)
+> ![](images/2.PNG)
 >
 > The 2nd FFT is already implemented in the code.
 > It will generate a Range Doppler Map as seen in the image below and it will be given by
@@ -123,7 +123,7 @@ The process above will generate a thresholded block, which is smaller than the R
 
 > - To keep the map size same as it was before CFAR, equate all the non-thresholded cells to 0.
 >
-> ![](images/3.png)
+> ![](images/3.PNG)
 >
 > Once you have completed this, you are done.
 
@@ -209,7 +209,7 @@ and determining a threshold by fair dice roll:
 
 This resulted in the following outcome:
 
-> ![](images/10.png)
+> ![](images/10.PNG)
 
 As can be seen, the correct spike was kept, but is very wide along the velocity
 axis; in addition, a couple of false positives were kept as well.
@@ -228,6 +228,6 @@ The result - as already shown in the very beginning of this README - is this plo
 As can be seen, the spike at 110 m and -20 m / s is reasonably sharp, although the
 precision along the doppler / velocity axis could be better:
 
-> ![](images/3.png)
+> ![](images/3.PNG)
 
 
