@@ -1,281 +1,233 @@
+# Radar Target Generation and Detection (2D CA-CFAR)
 
-## Rubric
+This project implements 2D [CA-CFAR](https://en.wikipedia.org/wiki/Constant_false_alarm_rate)
+(Cell-Averaging Constant False Alarm Rate) to detect target measurements against
+a noisy background for a frequency modulated continuous-wave (FMCW) radar.
 
-# 2D CFAR Implementation README
+The following picture shows a FMCW measurement of a target at 110 m distance
+with a velocity of -20 m/s. The left plot shows the noisy measurement obtained
+from the frequency mixer, whereas the right plot shows the CA-CFAR filtered
+Radar response.
 
-In this small report, an overview of how the 2D variant of the Constant False Alarm Rate (CFAR) was implemented as well as the rationale behind the choices made for the hyperparameters and how the edges of the joint Doppler frequency and range spectrum were handled.
-
-## Implementation Steps
-
-2D CFAR was implemented following the prompts with following parameters: 8 doppler training cells and 10 range training cells, 4 guard cells for both dimensions. Offset of 6 dB to construct the threshold. For each iteration CUT cell, we take the noise level as the average value of the db2pow(signal) around it's training cells. I further added the noise level with the offset. After comparing the signal value with the calculated threshold, ones that bigger than threshold was normalized to 1, otherwise 0. 
-## Selection of Hyperparameters
-
-Due to repeated experimentation and observing the output, the following hyperparameters were chosen:
-
-* `Td = 10`
-* `Tr = 8`
-* `Gr = 4`
-* `Gd = 4`
-* `offset = 6`
-
-These were primarily chosen because of the walkthrough video, but also because of repeated experimentation to see how the performance varies when we slowly diverge away from the initial hyperparameters chosen.  The initial hyperparameters chosen were already good enough, so they remain in the final version of this project.
-
-## Dealing with the edge cases
-
-Finally, in a vectorised manner we simply use indexing to suppress all of the edges of the output by simply examining how much the halfway point of the rows and columns would be in the proposed mask and setting those locations in the output mask to 0 accordingly.  By using indexing, we leave the remaining elements intact.
-
-
-## Radar Specifications {#2}
-
-```{.codeinput}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Frequency of operation = 77GHz
-% Max Range = 200m
-% Range Resolution = 1 m
-% Max Velocity = 100 m/s
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
-```
-
-## User Defined Range and Velocity of target {#3}
-
-**%TODO** : define the target's initial position and velocity. Note :
-Velocity remains contant
-
-```{.codeinput}
-R = 110;
-v = -20;
-
-max_range = 200;
-range_res = 1;
-max_velocity = 100;
-c = 3e8;
-```
-
-## FMCW Waveform Generation {#4}
-
-```{.codeinput}
-% *%TODO* :
-%Design the FMCW waveform by giving the specs of each of its parameters.
-% Calculate the Bandwidth (B), Chirp Time (Tchirp) and slope (slope) of the FMCW
-% chirp using the requirements above.
-
-%Operating carrier frequency of Radar
-fc = 77e9;             %carrier freq Hz
-B = c / (2 * range_res);
-
-% The sweep time can be computed based on the time needed for the signal to travel the unambiguous
-% maximum range. In general, for an FMCW radar system, the sweep time should be at least
-% 5 to 6 times the round trip time. This example uses a factor of 5.5.
-Tchirp = 5.5 * 2 * max_range / c;
-slope = B / Tchirp;
-
-%The number of chirps in one sequence. Its ideal to have 2^ value for the ease of running the FFT
-%for Doppler Estimation.
-Nd = 128;                   % #of doppler cells OR #of sent periods % number of chirps
-
-%The number of samples on each chirp.
-Nr = 1024;                  %for length of time OR # of range cells
-
-% Timestamp for running the displacement scenario for every sample on each
-% chirp
-t = linspace(0,Nd*t_chirp,Nr*Nd); %total time for samples
-
-%Creating the vectors for Tx, Rx and Mix based on the total samples input.
-Tx = zeros(1, length(t)); %transmitted signal
-Rx = zeros(1, length(t)); %received signal
-Mix = zeros(1, length(t)); %beat signal
-
-
-%Similar vectors for range_covered and time delay.
-r_t = zeros(1, length(t));
-td = zeros(1, length(t));
-```
-
-## Signal generation and Moving Target simulation {#5}
-
-Running the radar scenario over the time.
-
-```{.codeinput}
-for i = 1 : length(t)
-  % *%TODO* :
-  %For each time stamp update the Range of the Target for constant velocity.
-  r_t(i) = target_range + (target_velocity*t(i));
-
-
-  % *%TODO* :
-  %For each time sample we need update the transmitted and
-  %received signal.
-    td(i) = 2 * r_t(i) / c;
-    Tx(i) = cos(2*pi*(fc*t(i) + (alpha*(t(i)^2)/2)));
-    Rx(i) = cos(2*pi*(fc*(t(i) - td(i)) + (alpha*((t(i) - td(i))^2)/2)));
-
-  % *%TODO* :
-  %Now by mixing the train_cellsansmit and Receive generate the beat signal
-  %This is done by element wise matrix multiplication of train_cellsansmit and
-  %Receiver Signal
-   Mix(i) = Tx(i) * Rx(i); 
-end
-```
-
-## RANGE MEASUREMENT {#6}
-
-**%TODO** :
-
-```{.codeinput}
-%reshape the vector into Nr*Nd array. Nr and Nd here would also define the size of
-%Range and Doppler FFT respectively.
-Mix_matrix = reshape(Mix, [Nr, Nd]);
-
-% *%TODO* :
-%run the FFT on the beat signal along the range bins dimension (Nr) and
-%normalize.
-Mix_FFT = fft(Mix_matrix, [], 1) / Nr;
-
-% *%TODO* :
-% Take the absolute value of FFT output
-Mix_FFT_mag = abs(Mix_FFT);
-Mix_FFT_mag = max(Mix_FFT_mag, [], 2);
-
-% *%TODO* :
-% Output of FFT is double sided signal, but we are interested in only one side of the spectrum.
-% Hence we throw out half of the samples.
-Mix_FFT_mag = Mix_FFT_mag(1 : Nr/2);
-
-%plotting the range
-figure ('Name','Range from First FFT')
-subplot(2,1,1)
-
-% *%TODO* :
-% plot FFT output
-plot(sig_fft);
-plot(Mix_FFT_mag);
- xlabel('Range (ft)');
- ylabel('FFT Magnitude');
-axis ([0 200 0 1]);
-grid;
- 
-```
-<img src="images/1.PNG" width="820" height="248" />
-
-## RANGE DOPPLER RESPONSE {#7}
+![](images/1.png)
 
 ---
 
-The 2D FFT implementation is already provided here. This will run a
-2DFFT on the mixed signal (beat signal) output and generate a range
-doppler map.You will implement CFAR on the generated RDM
+## Project Overview
 
-```{.codeinput}
-% Range Doppler Map Generation.
+![](images/4.png)
 
-% The output of the 2D FFT is an image that has reponse in the range and
-% doppler FFT bins. So, it is important to convert the axis from bin sizes
-% to range and doppler based on their Max values.
+> - Configure the FMCW waveform based on the system requirements.
+> - Define the range and velocity of target and simulate its displacement.
+> - For the same simulation loop process the transmit and receive signal to determine the beat signal
+> - Perform Range FFT on the received signal to determine the Range
+> - Towards the end, perform the CFAR processing on the output of 2nd FFT to display the target.
 
-Mix = reshape(Mix, [Nr, Nd]);
+<details>
 
-% 2D FFT using the FFT size for both dimensions.
-sig_fft2 = fft2(Mix, Nr, Nd);
+### Radar System Requirements
 
-% Taking just one side of signal from Range dimension.
-sig_fft2 = sig_fft2(1 : Nr/2, 1 : Nd);
-sig_fft2 = fftshift(sig_fft2);
+> The sensor fusion design for different
+> driving scenarios requires different system configurations from a Radar. In this project,
+> you will designing a Radar based on the given system requirements:
+>
+> ![](images/5.png)
+>
+> Max Range and Range Resolution will be considered here for waveform design.
+> - The sweep bandwidth can be determined according to the range resolution and the sweep
+>   slope is calculated using both sweep bandwidth and sweep time.
+>   ```
+>   Bandwidth(B_sweep) = speed of light / (2*rangeResolution)
+>   ```
+> - The sweep time can be computed based on the time needed for the signal to travel the
+>   unambiguous maximum range. In general, for an FMCW radar system, the sweep time should
+>   be at least 5 to 6 times the round trip time. This example uses a factor of 5.5.
+>   ```
+>   T_chirp = 5.5 * 2 * R_max / c
+>   ```
+>   Giving the slope of the chirp signal
+>   ```
+>   Slope=Bandwidth/T_chirp
+>   ```
+>
+> #### Initial Range and velocity of the Target
+>
+> You will provide the initial range and velocity of the target.
+> Range cannot exceed the max value of 200m and velocity can be
+> any value in the range of -70 to + 70 m/s.
 
-range_doppler_map = abs(sig_fft2);
-range_doppler_map = 10 * log10(range_doppler_map);
+### Target Generation and Detection
 
-%use the surf function to plot the output of 2DFFT and to show axis in both
-%dimensions
-doppler_axis = linspace(-100, 100, Nd);
-range_axis = linspace(-200, 200, Nr/2) * ((Nr/2) / 400);
+> Next, you will be simulating the signal propagation and moving target scenario.
+>
+> ![](images/6.png)
+>
+> #### Theory
+>
+> In terms of wave equation, FMCW transmit and received signals are defined using
+> these wave equations, where `α = Slope of the signal`.
+> The Transmit Signal is given by:
+>
+> ![](images/7.png)
+>
+> The received signal is nothing but the time delayed version of the Transmit Signal.
+> In digital signal processing the time delayed version is defined by (t−τ),
+> where τ represents the delay time, which in radar processing is the trip time for the signal.
+> Replacing t with (t−τ) gives the Receive Signal:
+>
+> ![](images/8.png)
+>
+> On mixing these two signals, we get the beat signal, which holds the values for both
+> range as well as doppler. By implementing the 2D FFT on this beat signal,
+> we can extract both Range and Doppler information.
+>
+> The beat signal can be calculated by multiplying the Transmit signal with Receive signal.
+> This process in turn works as frequency subtraction. It is implemented by element by element
+> multiplication of transmit and receive signal matrices.
+> ```
+> Mixed or Beat Signal = Tx .* Rx
+> ```
+> The above operation gives:
+>
+> ![](images/9.png)
 
-% Additional views of the surface plot
-figure ('Name', 'Amplitude and Range From FFT2');
-surf(doppler_axis, range_axis, range_doppler_map);
-title('Amplitude and Range From FFT2');
-xlabel('Speed');
-ylabel('Range');
-zlabel('Amplitude');
-```
+### FFT Operation
 
-<img src="images/2.PNG" width="820" height="248" />
+> - Implement the 1D FFT on the Mixed Signal
+> - Reshape the vector into Nr*Nd array.
+> - Run the FFT on the beat signal along the range bins dimension (Nr)
+> - Normalize the FFT output.
+> - Take the absolute value of that output.
+> - Keep one half of the signal
+> - Plot the output
+> - There should be a peak at the initial position of the target
+>
+> ![](images/2.png)
+>
+> The 2nd FFT is already implemented in the code.
+> It will generate a Range Doppler Map as seen in the image below and it will be given by
+> variable `RDM`. Next task is to implement the CFAR on this Range Doppler Map.
 
-##CFAR implementation {#8}
+
+### 2D CFAR
+
+> - Determine the number of Training cells for each dimension. Similarly, pick the number of guard cells.
+> - Slide the cell under test across the complete matrix. Make sure the CUT has margin for Training and Guard cells from the edges.
+> - For every iteration sum the signal level within all the training cells. To sum convert the value from logarithmic to linear using db2pow function.
+> - Average the summed values for all of the training cells used. After averaging convert it back to logarithmic using pow2db.
+> - Further add the offset to it to determine the threshold.
+> - Next, compare the signal under CUT against this threshold.
+> - If the CUT level > threshold assign it a value of 1, else equate it to 0.
+
+The process above will generate a thresholded block, which is smaller than the Range Doppler Map as the CUTs cannot be located at the edges of the matrix due to the presence of Target and Guard cells. Hence, those cells will not be thresholded.
+
+> - To keep the map size same as it was before CFAR, equate all the non-thresholded cells to 0.
+>
+> ![](images/3.png)
+>
+> Once you have completed this, you are done.
+
+## Project Rubric
+
+### FMCW Waveform Design
+
+- **Criteria:** Using the given system requirements, design
+a FMCW waveform. Find its Bandwidth (B), chirp time (Tchirp) and slope of the chirp.
+
+  **Meets Specification:** For given system requirements the calculated slope should be around 2e13
+
+### Simulation Loop
+
+- **Criteria:** Simulate Target movement and calculate the beat or mixed signal for every timestamp.
+
+  **Meets Specifications:** A beat signal should be generated such that once range FFT implemented, it gives the correct range i.e the initial position of target assigned with an error margin of +/- 10 meters.
+
+### Range FFT (1st FFT)
+
+- **Criteria:** Implement the Range FFT on the Beat or Mixed Signal and plot the result.
+
+  **Meets Specifications:** A correct implementation should generate a peak at the correct range, i.e the initial position of target assigned with an error margin of +/- 10 meters.
+
+### 2D CFAR
+
+- **Criteria:** Implement the 2D CFAR process on the output of 2D FFT operation, i.e the Range Doppler Map.
+
+  **Meets Specifications:** The 2D CFAR processing should be able to suppress the noise and separate the target signal. The output should match the image shared in walkthrough.
+
+- **Criteria:** Create a CFAR README file.
+
+  **Meets Specifications:** In a README file, write brief explanations for the following:
+  - Implementation steps for the 2D CFAR process.
+  - Selection of Training, Guard cells and offset.
+  - Steps taken to suppress the non-thresholded cells at the edges.
 
 ---
 
-```{.codeinput}
-%Slide Window through the complete Range Doppler Map
-% *%TODO* :
-%Select the number of train_cellsaining Cells in both the dimensions.
-Tr = 10;
-Td = 8;
+</details>
 
-% *%TODO* :
-%Select the number of Guard Cells in both dimensions around the Cell under
-%test (CUT) for accurate estimation
-Gr = 4;
-Gd = 4;
+## Project Implementation
 
-% *%TODO* :
-% offset the threshold by SNR value in dB
-offset = 6;
-%Create a vector to store noise_level for each iteration on training cells
-noise_level = zeros(1,1);
+Given the specifications above and a sweep-to-roundtrip factor of 5.5 (given in the lectures
+as a typical value for an FMCW radar system), the following values were determined:
 
-% *%TODO* :
-%design a loop such that it slides the CUT across range doppler map by
-%giving margins at the edges for train_cellsaining and Guard Cells.
-%For every iteration sum the signal level within all the training
-%cells. To sum convert the value from logarithmic to linear using db2pow
-%function. Average the summed values for all of the training
-%cells used. After averaging convert it back to logarithimic using pow2db.
-%Further add the offset to it to determine the threshold. Next, compare the
-%signal under CUT with this threshold. If the CUT level > threshold assign
-%it a value of 1, else equate it to 0.
+- **Sweep bandwidth:** 150 MHz
+- **Chirp time:** 7.33 μs (7.3333e-06 s)
+- **Frequency drift / slope:** 20.45 THz/s (2.045e13 Hz/s)
+
+For the following simulation, a target was defined with the following parameters:
+
+- **Distance:** 110 m
+- **Velocity:** -20 m/s
+
+After simulating the beat signal was been for every time step, the Fourier transformation of it
+was taken in order to determine the distance to target. This resulted in a peak at
+
+- **Estimated distance:** 111 m
+
+Next, CA-CFAR was implemented as a march over each range/doppler cell (the cell-under-test, CUT),
+taking the integral of the training cells around it. The scan was limited to the extents of the
+CFAR signal storage array and normalization was done by the number of valid cells examined.
+Due to this procedure and since the CFAR signal array was initialized to zero, no edge suppression
+was required. If a signal were to be received in these edge areas however, we would have to expect
+slightly degraded results since a lower number of training cells is involved.
+
+In the next step, the mean noise level of the sampled cells was determined, converted from
+power to dB scale and compared against a threshold. Cells below threshold were suppressed, whereas
+cell values equal to or above threshold were kept. Note that this differs from the project description
+in that no further normalization is done here (specifically, good values are not simply set to one).
+Using the CFAR array as a multiplicative mask would be certainly possible with the approach
+described in the project, but the end result would be the same.
+
+Initially, the following setup was used by arbitrarily picking values from the lessons as defaults
+and determining a threshold by fair dice roll:
+
+- **Distance training cells:** 8
+- **Distance guard cells:** 4
+- **Doppler training cells:** 10
+- **Doppler training cells:** 4
+- **Threshold:** 4 dB
+
+This resulted in the following outcome:
+
+> ![](images/10.png)
+
+As can be seen, the correct spike was kept, but is very wide along the velocity
+axis; in addition, a couple of false positives were kept as well.
+
+Since the estimate along the range axis was very sharp and spot on, the
+number of doppler training cells was increased to suppress velocity errors better.
+In addition, the threshold was increased to 6 dB, such that
+
+- **Distance training cells:** 8
+- **Distance guard cells:** 4
+- **Doppler training cells:** 10
+- **Doppler training cells:** 4
+- **Threshold:** 6 dB
+
+The result - as already shown in the very beginning of this README - is this plot.
+As can be seen, the spike at 110 m and -20 m / s is reasonably sharp, although the
+precision along the doppler / velocity axis could be better:
+
+> ![](images/3.png)
 
 
-% Use RDM[x,y] as the matrix from the output of 2D FFT for implementing
-% CFAR
-
-RDM_copy = RDM;
-for i = Tr + Gr + 1 : Nr/2 - (Gr + Tr)
-    for j = Td + Gd + 1 : Nd - (Gd + Td)
-        noise_level = 0;
-        for p = i - (Tr + Gr) : i + Tr + Gr
-            for q = j - (Td + Gd) : j + Td + Gd
-                if abs(i - p) > Gr || abs(j - q) > Gd
-                    noise_level = noise_level + db2pow(RDM_copy(p, q));
-                end
-            end
-         end
-         threshold = pow2db(noise_level / ( ((2 * Tr + 2 * Gr + 1) * (2 * Td + 2 * Gd + 1)) - ((2 * Gr + 1)*(2 * Gd + 1))));
-         threshold = threshold + offset;
-         if RDM(i, j) < threshold
-             RDM(i, j) = 0;
-         else
-             RDM(i, j) = 1;
-         end
-     end
-end
-
-% *%TODO* :
-% The process above will generate a thresholded block, which is smaller
-%than the Range Doppler Map as the CUT cannot be located at the edges of
-%matrix. Hence,few cells will not be thresholded. To keep the map size same
-% set those values to 0.
- RDM(1 : Tr + Gr, :) = 0;
-RDM(Nr/2 - (Gr + Tr) + 1 : end, :) = 0;
-RDM(:, 1 : Td + Gd) = 0;
-RDM(:, Nd - (Gd + Td) + 1 : end) = 0;
-
-% *%TODO* :
-%display the CFAR output using the Surf function like we did for Range
-%Doppler Response output.
-figure,surf(doppler_axis,range_axis, RDM);
-colorbar;
-
-```
-
-<img src="images/3.PNG" width="820" height="248" />
-</div>
