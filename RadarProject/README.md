@@ -1,6 +1,30 @@
 
 ## Rubric
 
+# 2D CFAR Implementation README
+
+In this small report, an overview of how the 2D variant of the Constant False Alarm Rate (CFAR) was implemented as well as the rationale behind the choices made for the hyperparameters and how the edges of the joint Doppler frequency and range spectrum were handled.
+
+## Implementation Steps
+
+2D CFAR was implemented following the prompts with following parameters: 8 doppler training cells and 10 range training cells, 4 guard cells for both dimensions. Offset of 6 dB to construct the threshold. For each iteration CUT cell, we take the noise level as the average value of the db2pow(signal) around it's training cells. I further added the noise level with the offset. After comparing the signal value with the calculated threshold, ones that bigger than threshold was normalized to 1, otherwise 0. 
+## Selection of Hyperparameters
+
+Due to repeated experimentation and observing the output, the following hyperparameters were chosen:
+
+* `Td = 10`
+* `Tr = 8`
+* `Gr = 4`
+* `Gd = 4`
+* `offset = 6`
+
+These were primarily chosen because of the walkthrough video, but also because of repeated experimentation to see how the performance varies when we slowly diverge away from the initial hyperparameters chosen.  The initial hyperparameters chosen were already good enough, so they remain in the final version of this project.
+
+## Dealing with the edge cases
+
+Finally, in a vectorised manner we simply use indexing to suppress all of the edges of the output by simply examining how much the halfway point of the rows and columns would be in the proposed mask and setting those locations in the output mask to 0 accordingly.  By using indexing, we leave the remaining elements intact.
+
+
 ## Radar Specifications {#2}
 
 ```{.codeinput}
